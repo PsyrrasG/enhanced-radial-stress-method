@@ -1,0 +1,7 @@
+# Pinned runtime dependencies.
+#
+# The versions below are those used to produce the results reported in the
+# accompanying thesis and papers. Pinning them keeps the analysis reproducible;
+# the code also runs with any numpy >= 1.24 if you prefer a looser constraint
+# (see pyproject.toml).
+numpy==2.4.4

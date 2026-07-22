@@ -1,0 +1,31 @@
+# Citation metadata. GitHub renders a "Cite this repository" button from this file.
+# REPLACE the placeholder fields before publishing, and add the Zenodo DOI once
+# the first release has been archived.
+cff-version: 1.2.0
+title: "Enhanced Radial Stress Method for the Vierendeel bending design of perforated steel beams with circular or elliptical openings."
+message: "If you use this software, please cite it using these metadata."
+type: software
+authors:
+  - given-names: "Georgios"
+    family-names: "Psyrras"
+    email: "giorgos.psyrras@city.ac.uk"
+    affiliation: "City St George's, University of London"
+repository-code: "https://github.com/PsyrrasG/enhanced-radial-stress-method"
+abstract: >-
+  Algorithmic implementation of the Enhanced Radial Stress Method for the
+  Vierendeel bending design of perforated steel I-beams with circular or elliptical web
+  openings, in accordance with BS EN 1993-1-13:2024. Provides four analysis
+  modes over a shared vectorised numerical core: the elastic limit of the lower
+  and higher moment sides, the plastic capacity with moment redistribution, and
+  the state of the opening at a prescribed pair of applied forces.
+keywords:
+  - structural engineering
+  - steel design
+  - cellular beams
+  - Enhanced RSM
+  - Enhanced Radial Stress Method
+  - Vierendeel bending
+  - Eurocode 3
+# No SPDX licence identifier while the code is all-rights-reserved.
+version: "1.0.0"
+date-released: "2026-07-23"

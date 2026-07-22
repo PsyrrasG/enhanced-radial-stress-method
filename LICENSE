@@ -1,0 +1,49 @@
+Copyright (c) 2026 REPLACE: Author Name. All rights reserved.
+
+This repository accompanies my doctoral thesis "REPLACE: Thesis Title"
+(City St George's, University of London, 2026) and the publications listed in README.md.
+It is published so that supervisors, examiners, reviewers and readers of that
+work can inspect the source code behind the reported results.
+
+
+TERMS
+
+Permission is granted to view, download and inspect this source code for the
+sole purpose of academic review and verification of the accompanying thesis and
+publications.
+
+No other rights are granted. In particular, without the prior written permission
+of the copyright holder you may not:
+
+  * use this software, in whole or in part, for any research, commercial,
+    educational or design purpose;
+  * copy, modify, adapt, translate or create derivative works from it;
+  * redistribute it, in original or modified form, by any means.
+
+
+INTENDED FUTURE LICENSING
+
+These restrictions are temporary. Following the successful defence of the
+accompanying thesis, this software is intended to be re-released under a
+permissive open-source licence, so that it may be freely used, modified and
+built upon by researchers and practising engineers.
+
+If you wish to use this code before then, please contact the author.
+
+
+NO WARRANTY
+
+This software is provided "as is", without warranty of any kind, express or
+implied, including but not limited to the warranties of merchantability, fitness
+for a particular purpose and non-infringement. In no event shall the copyright
+holder be liable for any claim, damages or other liability, whether in an action
+of contract, tort or otherwise, arising from, out of or in connection with this
+software or its use.
+
+Results produced by this software should be verified against the accompanying
+publications. It is a research tool and is not a substitute for engineering
+judgement; it must not be relied upon as the sole basis for the design of any
+structure.
+
+
+Contact: giorgos.psyrras@city.ac.uk

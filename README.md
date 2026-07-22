@@ -181,7 +181,7 @@ If you use this software in published work, please cite both the software and th
 
 **Software** — see `CITATION.cff`, or use the archived release DOI.
 
-**Method** — REPLACE: add the full references for the accompanying papers, for example:
+**Method** — References for the accompanying papers:
 
 - Psyrras, G., Tsavdaridis, K.D. and Lawson, R.M. (2026) ‘Enhanced Radial Stress Method (RSM) for cellular beams in EN 1993-1-13 to account for elasto-plastic behaviour’, Journal of Constructional Steel Research, 239, p. 110221. Available at: https://doi.org/10.1016/J.JCSR.2025.110221.
 

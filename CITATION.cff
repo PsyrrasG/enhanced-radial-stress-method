@@ -1,6 +1,5 @@
 # Citation metadata. GitHub renders a "Cite this repository" button from this file.
-# REPLACE the placeholder fields before publishing, and add the Zenodo DOI once
-# the first release has been archived.
+# Add the Zenodo DOI once the first release has been archived.
 cff-version: 1.2.0
 title: "Enhanced Radial Stress Method for the Vierendeel bending design of perforated steel beams with circular or elliptical openings."
 message: "If you use this software, please cite it using these metadata."

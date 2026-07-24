@@ -2,7 +2,9 @@
 
 Algorithmic implementation of the **Enhanced Radial Stress Method (Enhanced RSM)** for the *Vierendeel* bending design of perforated steel I-beams with circular or elliptical web openings, in accordance with **BS EN 1993-1-13:2024**.
 
-The simplified methods in EN 1993-1-13 evaluate the *Vierendeel* bending resistance at a small number of predetermined cross-sections and select either the elastic or the fully plastic resistance according to the section classification, which produces a step between the two. The Enhanced RSM removes that step by allowing the inclined Tee section to develop a continuous level of plasticity — but in doing so it replaces a closed-form evaluation with an iterative search, which is why it needs software.
+The simplified methods in EN 1993-1-13 evaluate the *Vierendeel* bending resistance at a small number of predetermined cross-sections and select either the elastic or the fully plastic resistance according to the section classification, which produces a step between the two. The Enhanced RSM removes that step by allowing the inclined Tee section to develop a continuous level of plasticity – but in doing so it replaces a closed-form evaluation with an iterative search, which is why it needs software.
+
+![Enhanced RSM force equilibrium in the upper Tee (Q1 and Q2)](docs/images/enhancedrsm_equilibrium.png)
 
 Three features make the method impractical by hand:
 

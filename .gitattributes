@@ -1,0 +1,28 @@
+# Normalise line endings so the repository is consistent across platforms.
+#
+# Files are stored with LF in the repository and checked out with the
+# platform's native convention, which keeps diffs clean whether a contributor
+# works on Windows, macOS or Linux.
+
+# Detect text files automatically and normalise them on commit.
+* text=auto
+
+# Be explicit for the file types in this repository.
+*.py      text diff=python
+*.md      text
+*.txt     text
+*.toml    text
+*.cff     text
+*.json    text
+Dockerfile text
+LICENSE   text
+.gitignore text
+
+# Binary files must never be converted.
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.gif     binary
+*.pdf     binary
+*.zip     binary
+*.xlsx    binary

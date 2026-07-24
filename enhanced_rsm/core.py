@@ -198,7 +198,7 @@ def build_section_properties(h, h_o, b_f, t_w, t_f, r, f_y):
 # Force-equilibrium kernels
 # ---------------------------------------------------------------------------
 def perform_rsm(sector, Ved, N_T, props, vectorised=True):
-    """Enhanced-RSM force equilibrium on the inclined plane of one quadrant.
+    """RSM force equilibrium on the inclined plane of one quadrant.
 
     Computes the internal axial force, shear force and moment on the inclined
     plane for every plane angle. Works both for a vector of trial shear forces

@@ -1,18 +1,17 @@
 """
-Enhanced RSM — Mode EL2 (Elastic Limit, higher moment side).
+Enhanced RSM — Elastic Limit Mode - HMS (EL2).
 
 Determines the shear force at which the higher moment side (HMS) of a circular
-web opening first reaches yield. This is the companion to the lower-moment-side
+web opening first reaches yield. This is the companion to the LMS
 elastic limit returned by mode EL1.
 
 By the time the HMS reaches its elastic limit the lower moment side (LMS) has
-already yielded and developed a degree of plasticity, so the analysis also
-solves the LMS over the plasticity grid at that same shear and reports how far
+already yielded and developed a level of plasticity, so the analysis also
+solves the LMS over the plasticity grid at that same shear force and reports how far
 it has yielded. If that plasticity reaches 100 per cent the premise of a purely
 elastic HMS limit is no longer consistent — the LMS can develop no further
-resistance and equilibrium requires redistribution. This module reports that
-condition through :attr:`EL2Result.redistribution_required`; deciding what to do
-about it is left to the caller.
+resistance and equilibrium requires redistribution. This module reports that condition 
+through :attr:`EL2Result.redistribution_required`; deciding what to do about it is left to the caller.
 
 The numerical kernels are imported from :mod:`enhanced_rsm.core`; this module
 only orchestrates them for the EL2 analysis and packages the result.
@@ -36,14 +35,14 @@ from .core import (
 
 
 class EL2Result(NamedTuple):
-    """Result of an EL2 (elastic limit, higher moment side) analysis.
+    """Result of an EL2 (elastic limit, HMS) analysis.
 
     Attributes
     ----------
     duration : float
         Wall-clock analysis time (s).
     V_ed_EL2 : float
-        Elastic-limit shear force on the higher moment side (kN).
+        Elastic-limit shear force on the HMS (kN).
     M_ed_EL2 : float
         Corresponding global moment at the centre-line (kNm).
     theta_critical_Q2, theta_critical_Q3 : int
@@ -85,7 +84,7 @@ class EL2Result(NamedTuple):
 
 
 def _solve_lms_plasticity(sector, Ved, N_T, props, n_expanded, n_values):
-    """Plasticity already developed on an LMS quadrant at a prescribed shear.
+    """Plasticity already developed on an LMS quadrant at a shear force.
 
     Solves the quadrant over the plasticity grid at a fixed shear and returns the
     plane at which the moment ratio converges with the greatest yielded web
@@ -120,7 +119,7 @@ def _solve_lms_plasticity(sector, Ved, N_T, props, n_expanded, n_values):
         raise ValueError("_solve_lms_plasticity() applies to the LMS (Q1, Q4).")
 
     N_th, _, M_th = perform_rsm(sector, Ved, N_T, props, vectorised=False)
-    s_edge = compute_elastic_stress(sector, N_th, M_th, props)
+    s_edge = np.clip(compute_elastic_stress(sector, N_th, M_th, props), -props.f_y, props.f_y)
     s_edge_max = float(s_edge[int(np.argmax(np.abs(s_edge)))])
 
     z = calculate_zep(sector, N_th, n_expanded, props, elastic_mode=False)
@@ -248,10 +247,9 @@ def run_mode_el2(h, h_o, b_f, t_w, t_f, r, f_y, M_V_Ratio, max_n=20):
 if __name__ == "__main__":
     # Demonstration run (UB 457x152x52, S355, 75%h circular opening, M/V = 2.333).
     result = run_mode_el2(
-        h=449.8, h_o=337.35, b_f=152.4, t_w=7.6, t_f=10.9, r=10.2,
-        f_y=355, M_V_Ratio=2.333,
+        h=449.8, h_o=337.35, b_f=152.4, t_w=7.6, t_f=10.9, r=10.2, f_y=355, M_V_Ratio=0.333,
     )
-    print("Mode EL2 - Elastic Limit (higher moment side)")
+    print("Elastic Limit Mode - HMS (EL2)")
     print(f"  duration        : {result.duration:.3f} s")
     print(f"  V_ed (EL2, HMS) : {result.V_ed_EL2:.0f} kN")
     print(f"  M_ed (EL2)      : {result.M_ed_EL2:.0f} kNm")
@@ -259,5 +257,5 @@ if __name__ == "__main__":
     print(f"  Q3  theta={result.theta_critical_Q3:>2d} deg  s_edge_max={result.s_edge_max_Q3:7.1f} MPa")
     print(f"  Q1  theta={result.theta_critical_Q1:>2d} deg  pl_ratio={result.pl_ratio_Q1:6.2f}%  n={result.n_Q1:.2f}  s_edge_max={result.s_edge_max_Q1:7.1f} MPa")
     print(f"  Q4  theta={result.theta_critical_Q4:>2d} deg  pl_ratio={result.pl_ratio_Q4:6.2f}%  n={result.n_Q4:.2f}  s_edge_max={result.s_edge_max_Q4:7.1f} MPa")
-    print(f"  redistribution required: {result.redistribution_required}")
+    print(f"  moment redistribution required?: {result.redistribution_required}")
     print(f"  edge-stress distribution: {len(result.s_edge_360)} values")

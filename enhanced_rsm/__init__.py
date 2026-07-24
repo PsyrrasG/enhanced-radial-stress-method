@@ -1,8 +1,8 @@
 """
-Enhanced Radial Stress Method (RSM) for perforated steel beams.
+Enhanced Radial Stress Method (RSM) for perforated steel beams with circular or elliptical openings.
 
 An elasto-plastic extension of the Radial Stress Method for the *Vierendeel*
-bending design of steel I-beams with web openings, in the framework of
+bending design of steel I-beams with web openings, in accordance with
 EN 1993-1-13.
 
 Four analysis modes share a single numerical core:

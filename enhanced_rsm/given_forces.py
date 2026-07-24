@@ -1,11 +1,11 @@
 """
-Enhanced RSM — Mode Given Forces.
+Enhanced RSM — Given Forces Mode.
 
-Interrogates a circular web opening at a prescribed pair of applied forces
-rather than searching for a limiting shear. If the applied shear lies below the
+Inspects a circular web opening at a given pair of applied forces
+rather than searching for a limiting shear force. If the applied shear force lies below the
 elastic limit the response is elastic and the elastic stress state is reported.
 Otherwise the section is solved once at those forces — with no shear sweep — to
-report the degree of plasticity on both sides of the opening, and moment is
+report the level of plasticity on both sides of the opening, and moment is
 redistributed from the lower moment side (LMS) to the higher moment side (HMS)
 if the LMS has fully yielded.
 
@@ -119,12 +119,12 @@ def _make_initial_state():
     }
 
 
-def _solve_sector_plasticity(sector, N_Q, Ved, N_T, props, n_expanded, n_values):
+def _perform_enhanced_rsm(sector, N_Q, Ved, N_T, props, n_expanded, n_values):
     """Solve one quadrant over the plasticity grid at a fixed pair of forces.
 
     Unlike the plastic-capacity sweep the shear is constant here, so the search
     returns the plane with the greatest yielded web proportion at which the
-    moment ratio converges.
+    solution converges.
 
     Returns
     -------
@@ -167,10 +167,10 @@ def _compute_tee_state(LMS_sector, HMS_sector, state, Ved, N_T, N_Q_map, props,
     fully yielded; the checks that would terminate a plastic-capacity sweep are
     recorded as flags here rather than stopping the analysis.
     """
-    LMS_M_Rd_tot, LMS_M_Ed, _, _, LMS_info = _solve_sector_plasticity(
+    LMS_M_Rd_tot, LMS_M_Ed, _, _, LMS_info = _perform_enhanced_rsm(
         LMS_sector, N_Q_map[LMS_sector], Ved, N_T, props, n_expanded, n_values
     )
-    HMS_M_Rd_tot, HMS_M_Ed, _, HMS_pl_ratio_values, HMS_info = _solve_sector_plasticity(
+    HMS_M_Rd_tot, HMS_M_Ed, _, HMS_pl_ratio_values, HMS_info = _perform_enhanced_rsm(
         HMS_sector, N_Q_map[HMS_sector], Ved, N_T, props, n_expanded, n_values
     )
 
@@ -185,7 +185,7 @@ def _compute_tee_state(LMS_sector, HMS_sector, state, Ved, N_T, N_Q_map, props,
         state["n_HMS"] = HMS_info["n"]
 
     if HMS_info and HMS_info["pl_ratio"] >= 100.0:
-        # The higher moment side has already failed at these forces.
+        # The HMS has already failed at these forces.
         state["total_failure"] = True
         return state
 
@@ -223,7 +223,7 @@ def _compute_tee_state(LMS_sector, HMS_sector, state, Ved, N_T, N_Q_map, props,
 
 def run_mode_given_forces(h, h_o, b_f, t_w, t_f, r, f_y, Ved, Med,
                           Ved_EL1=None, max_n=20):
-    """Run a Given Forces analysis at a prescribed shear and moment.
+    """Run a Given Forces analysis at a given shear and moment pair.
 
     Parameters
     ----------
@@ -231,7 +231,7 @@ def run_mode_given_forces(h, h_o, b_f, t_w, t_f, r, f_y, Ved, Med,
         Section depth, opening diameter, flange width, web thickness, flange
         thickness, root radius (mm) and yield strength (MPa).
     Ved : float
-        Applied vertical shear at the opening centre-line (kN).
+        Applied vertical shear force at the opening centre-line (kN).
     Med : float
         Applied global moment at the opening centre-line (kNm).
     Ved_EL1 : float, optional
@@ -261,11 +261,8 @@ def run_mode_given_forces(h, h_o, b_f, t_w, t_f, r, f_y, Ved, Med,
     Med_Nmm = Med * 1e6
     N_T = Med_Nmm * (0.5 * h_o + props.c_o) * props.A_T_o / props.I_beam
 
-    # Internal forces per quadrant at the prescribed forces.
-    forces = {
-        sector: perform_rsm(sector, Ved_N, N_T, props, vectorised=False)
-        for sector in (1, 2, 3, 4)
-    }
+    # Internal forces per quadrant at the given forces pair.
+    forces = {sector: perform_rsm(sector, Ved_N, N_T, props, vectorised=False) for sector in (1, 2, 3, 4)}
 
     # --- Elastic branch --------------------------------------------------
     if Ved < Ved_EL1:
@@ -355,8 +352,7 @@ if __name__ == "__main__":
     for Ved, Med, label in [(60, 80, "below the elastic limit"),
                             (100, 133, "above the elastic limit")]:
         result = run_mode_given_forces(**section, Ved=Ved, Med=Med)
-        print(f"Mode Given Forces - V_ed = {result.V_ed:.0f} kN, "
-              f"M_ed = {result.M_ed:.0f} kNm ({label})")
+        print(f"Given Forces Mode - V_ed = {result.V_ed:.0f} kN, "f"M_ed = {result.M_ed:.0f} kNm ({label})")
         print(f"  duration      : {result.duration:.3f} s")
         print(f"  V_ed (EL1)    : {result.V_ed_EL1:.0f} kN")
         print(f"  response      : {'elastic' if result.elastic else 'elasto-plastic'}")

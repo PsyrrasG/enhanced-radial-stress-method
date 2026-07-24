@@ -1,5 +1,5 @@
 """
-Enhanced RSM — Mode PLCAP (Plastic Capacity with moment redistribution).
+Enhanced RSM — Plastic Capacity Mode - PLCAP (with/without moment redistribution).
 
 Determines the plastic capacity of a perforated section with a circular web
 opening. The applied shear is swept upward from the elastic limit; at each step
@@ -42,7 +42,7 @@ class PLCAPResult(NamedTuple):
     """Result of a PLCAP (plastic capacity) analysis.
 
     Fields that depend on redistribution having occurred are ``None`` when it did
-    not. All shears are in kN, moments in kNm, stresses in MPa and angles in
+    not. All shear forces are in kN, moments in kNm, stresses in MPa and angles in
     degrees.
 
     Attributes
@@ -124,9 +124,11 @@ def _perform_enhanced_rsm(sector, N_Q, Ved, N_T, props, n_expanded, n_values,
                           critical_theta_found, critical_theta_completed):
     """Solve one quadrant over the plasticity grid for a fixed shear.
 
-    Branch 1 (used while the critical plane has not yet been found) locates the
-    first fully-yielded plane on the LMS. Branch 2 (used once the critical plane
-    is found) captures the plasticity level on the HMS at the same shear.
+    Branch 1 (used while the critical plane has not yet been found) 
+    locates the first fully-yielded plane on the LMS. 
+    
+    Branch 2 (used once the critical plane is found) 
+    captures the plasticity level on the HMS at the same shear.
 
     Returns
     -------
@@ -161,7 +163,7 @@ def _perform_enhanced_rsm(sector, N_Q, Ved, N_T, props, n_expanded, n_values,
     else:
         critical_theta_info = None
 
-    # Branch 2 — capture the HMS plasticity level once the critical plane exists.
+    # Branch 2 — capture the HMS plasticity level once the critical plane on LMS is found.
     if critical_theta_found and not critical_theta_completed:
         converged, (n_idxs_r_limit, _, pl_ratio_r_converged) = find_optimal_r(
             sector, r_values, props, elastic_mode=False,
@@ -170,6 +172,7 @@ def _perform_enhanced_rsm(sector, N_Q, Ved, N_T, props, n_expanded, n_values,
         if converged:
             theta_max = int(np.argmax(pl_ratio_r_converged))
             plasticity_level_max_info = {
+                "sector": sector,
                 "theta": theta_max,
                 "pl_ratio": pl_ratio_r_converged[theta_max],
                 "n": n_values[n_idxs_r_limit[theta_max]],
@@ -219,7 +222,7 @@ def _compute_tee_max_capacity(LMS_sector, HMS_sector, state, Ved, N_T, N_Q_map,
         state["n_max_HMS"] = HMS_plasticity_level_max_info["n"]
         state["critical_pl_level_HMS_captured"] = True
 
-    # --- Moment redistribution (only after the critical plane exists) ---
+    # --- Moment redistribution (only after the critical plane is found / full yield on LMS) ---
     if state["critical_theta_found"]:
         DM_T, _, _, _, _, HMS_r_after = redistribute_moment(
             Ved, LMS_M_Rd_tot, LMS_M_Ed, HMS_M_Rd_tot, HMS_M_Ed
@@ -238,16 +241,14 @@ def _compute_tee_max_capacity(LMS_sector, HMS_sector, state, Ved, N_T, N_Q_map,
 
             # Stop criterion 1: HMS exceeds full plasticity.
             if max_pl_ratio > 100:
-                state["redistribution_stop_criterion"] = (
-                    f"Reached max. plasticity in Q{HMS_sector}."
-                )
+                state["redistribution_stop_criterion"] = (f"Reached max. plasticity in Q{HMS_sector}.")
                 return "stop", state["redistribution_stop_criterion"], state
 
             # Stop criterion 2: redistributed moment exceeds the Tee resistance.
             M_T_Rd = analyze_circular_opening(
                 d_o=props.h_o, h=props.h, b_f=props.b_f, t_f=props.t_f,
                 t_w=props.t_w, r=props.r, f_y=props.f_y,
-                moment_shear_ratio=M_V_Ratio, V_Ed=Ved / 1e3,
+                moment_shear_ratio=M_V_Ratio, V_Ed=Ved/1e3,
             ) * 1e6
             if max_DM_T > M_T_Rd:
                 state["redistribution_stop_criterion"] = (
@@ -344,11 +345,8 @@ def run_mode_plcap(h, h_o, b_f, t_w, t_f, r, f_y, M_V_Ratio, max_n=20, min_Ved=N
         Med = Ved * (M_V_Ratio * 1e3)
         N_T = Med * (0.5 * h_o + props.c_o) * props.A_T_o / props.I_beam
 
-        # Internal axial forces per quadrant at this shear.
-        N_Q_map = {
-            sector: perform_rsm(sector, Ved, N_T, props, vectorised=False)[0]
-            for sector in (1, 2, 3, 4)
-        }
+        # Internal axial forces per quadrant at this shear force.
+        N_Q_map = {sector: perform_rsm(sector, Ved, N_T, props, vectorised=False)[0] for sector in (1, 2, 3, 4)}
 
         # Upper Tee first, so the critical plane is found on the LMS.
         status_UT, _, _ = _compute_tee_max_capacity(

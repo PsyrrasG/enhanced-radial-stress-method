@@ -1,5 +1,5 @@
 """
-Enhanced RSM — Mode EL1 (Elastic Limit, lower moment side).
+Enhanced RSM — Elastic Limit Mode - LMS (EL1).
 
 Determines the elastic limit of a perforated section with a circular web
 opening: the shear force at which the most critical inclined plane first reaches

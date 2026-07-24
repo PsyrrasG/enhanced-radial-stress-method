@@ -21,7 +21,7 @@ This package implements that method as a small, dependency-light Python library 
 Requires Python 3.9 or later.
 
 ```bash
-git clone https://github.com/REPLACE-USERNAME/enhanced-radial-stress-method.git
+git clone https://github.com/PsyrrasG/enhanced-radial-stress-method.git
 cd enhanced-radial-stress-method
 
 python -m venv .venv

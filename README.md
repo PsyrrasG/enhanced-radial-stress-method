@@ -93,6 +93,8 @@ All four modes share the same numerical core and differ only in what they hold f
 
 Two of these correspond to response stages identified in the finite element studies (the elastic limit and the plastic capacity). The other two are operational entry points: EL2 reports the companion higher-moment-side limit, and Given Forces lets an engineer inspect the section at a chosen pair of forces.
 
+Each mode exists in a circular and an elliptical form. They share the same orchestration and the same geometry-independent numerics, and differ only in how the opening is discretised — see [Elliptical openings](#elliptical-openings) below.
+
 ### Shared arguments
 
 Every mode takes the section geometry and material:
@@ -132,6 +134,36 @@ enhanced-rsm given-forces $SECTION --ved 100 --med 133 --output state.json
 
 ---
 
+## Elliptical openings
+
+The same four algorithms apply to elliptical openings. What changes is the geometry, and it changes in two ways that matter.
+
+For a circle, the normal to the edge at any point passes through the centre of the opening, so an inclined plane is fully described by its angle to the vertical. For an ellipse it does not: the normal at a point P meets the vertical centre-line at a point A that moves with P, so each inclined plane has to be constructed from the local geometry of the curve.
+
+Second, the perimeter of an ellipse has no closed-form expression, so points cannot be placed by a simple angular increment. Instead they are distributed at equal arc length around the quarter perimeter: the total arc length is obtained by numerical integration and the parameter increments by a fourth-order Runge–Kutta scheme. Equal arc-length spacing is what allows a direct comparison with the equally spaced nodes of a finite element mesh.
+
+Consequently the critical location is reported as a point index (0 at the vertical centre-line to 90 at the horizontal) together with its coordinates on the perimeter, rather than as an angle.
+
+The elliptical modes are currently available through the Python API. Each takes an additional `a_b_ratio` argument, the ratio of the horizontal to the vertical axis of the opening, where `h_o` is the vertical axis:
+
+```python
+from enhanced_rsm import run_mode_el1_elliptical
+
+result = run_mode_el1_elliptical(h=449.8, h_o=337.35, a_b_ratio=1.5,
+                                 b_f=152.4, t_w=7.6, t_f=10.9, r=10.2,
+                                 f_y=355, M_V_Ratio=1.333)
+
+print(result.V_ed_EL1)             # 60.0 kN
+print(result.point_critical_Q1)    # 22
+print(result.coords_critical_Q1)   # (-81.1, 159.8) mm from the opening centre
+```
+
+The corresponding functions are `run_mode_el1_elliptical`, `run_mode_el2_elliptical`, `run_mode_plcap_elliptical` and `run_mode_given_forces_elliptical`. For plotting, `perimeter_coordinates_360(props)` returns the perimeter coordinates matching the edge-stress distribution index for index, and `point_coordinates(props, index, quadrant)` gives the location of a single point.
+
+Setting `a_b_ratio = 1` describes a circle, and in that case the elliptical implementation reproduces the circular one exactly. Because the two are written independently — one discretising by equal angles, the other by equal arc length – that agreement is a genuine check on both, and it is asserted by the test suite.
+
+---
+
 ## Conventions
 
 Getting these right matters when comparing results with finite element output.
@@ -156,16 +188,19 @@ The package is organised accordingly:
 
 ```
 enhanced_rsm/
-├── core.py                     shared geometry, section properties and kernels
-├── tee_bending_resistance.py   Tee resistances at the opening centre-line
-├── el1.py                      elastic limit (LMS)
-├── el2.py                      elastic limit (HMS)
-├── plcap.py                    plastic capacity with redistribution
-├── given_forces.py             state at prescribed forces
-└── cli.py                      command-line interface
+├── core.py                       circular geometry, section properties, kernels
+├── core_elliptical.py            elliptical geometry and shape-dependent kernels
+├── tee_bending_resistance.py     Tee resistances at the opening centre-line
+├── el1.py / el1_elliptical.py    elastic limit (LMS)
+├── el2.py / el2_elliptical.py    elastic limit (HMS)
+├── plcap.py / plcap_elliptical.py        plastic capacity with redistribution
+├── given_forces.py / given_forces_elliptical.py   state at prescribed forces
+└── cli.py                        command-line interface
 ```
 
 `core.py` holds everything the four modes have in common — the section properties at every plane, the force-equilibrium relations, the elasto-plastic neutral-axis solve, the plasticity search and the redistribution step. Each mode module contains only its own orchestration.
+
+`core_elliptical.py` holds only what genuinely depends on the shape of the opening: the arc-length discretisation, the construction of the inclined plane from the local normal, and the two force-equilibrium kernels that use the resulting lever arm. The neutral-axis solve, the plasticity search, the edge-stress calculation and the redistribution step do not depend on the geometry and are re-used from `core.py` rather than duplicated.
 
 ---
 
@@ -174,6 +209,41 @@ enhanced_rsm/
 The method itself is validated against non-linear finite element analyses and test results in the publications listed below; this repository is the implementation of that validated method.
 
 > **Note.** Results produced by this public implementation should agree with those reported in the accompanying thesis and papers. Where a discrepancy arises, the publications take precedence and the difference should be reported as an issue.
+
+The repository additionally carries a test suite asserting the internal consistency of the two implementations — that the elliptical code reproduces the circular code exactly at unit axis ratio, at the level of the section properties, the internal forces, the moment ratio and every one of the four modes:
+
+```bash
+pip install -e ".[dev]"
+pytest tests/ -q
+```
+
+---
+
+## Development
+
+To work on the code or run the test suite, install the package with its
+development dependencies:
+
+```bash
+git clone https://github.com/PsyrrasG/enhanced-radial-stress-method.git
+cd enhanced-radial-stress-method
+
+python -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+
+pip install -e ".[dev]"            # runtime + testing dependencies
+```
+
+The `[dev]` extra adds `pytest`, which is not required to run an analysis and is
+therefore kept out of `requirements.txt`. Runtime dependencies (NumPy, SciPy)
+are pinned in `requirements.txt` and declared in `pyproject.toml`; the testing
+dependency is declared in `pyproject.toml` under `[project.optional-dependencies]`.
+
+Run the tests with:
+
+```bash
+pytest tests/ -q
+```
 
 ---
 
@@ -186,13 +256,6 @@ If you use this software in published work, please cite both the software and th
 **Method** — References for the accompanying papers:
 
 - Psyrras, G., Tsavdaridis, K.D. and Lawson, R.M. (2026) ‘Enhanced Radial Stress Method (RSM) for cellular beams in EN 1993-1-13 to account for elasto-plastic behaviour’, Journal of Constructional Steel Research, 239, p. 110221. Available at: https://doi.org/10.1016/J.JCSR.2025.110221.
-
----
-
-## Roadmap
-
-- **Elliptical openings.** The same four algorithms apply; the difference is in the geometry, where the inclined plane must be constructed from the local geometry of the ellipse and the perimeter is discretised at equal arc-length intervals by numerical integration. Support is planned.
-- **Test suite** asserting the published results.
 
 ---
 

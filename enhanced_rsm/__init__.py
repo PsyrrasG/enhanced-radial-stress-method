@@ -1,5 +1,5 @@
 """
-Enhanced Radial Stress Method (RSM) for perforated steel beams with circular or elliptical openings.
+Enhanced Radial Stress Method (RSM) for perforated steel beams.
 
 An elasto-plastic extension of the Radial Stress Method for the *Vierendeel*
 bending design of steel I-beams with web openings, in accordance with
@@ -8,14 +8,19 @@ EN 1993-1-13.
 Four analysis modes share a single numerical core:
 
 ``el1``
-    Elastic limit — the shear at which the lower moment side first yields.
+    Elastic limit — the shear force at which the lower moment (LMS) side first yields.
 ``el2``
-    Elastic limit of the higher moment side, with the plasticity already
-    developed on the lower moment side at that shear.
+    Elastic limit of the higher moment side (HMS), with the plasticity already
+    developed on the LMS at that shear force.
 ``plcap``
     Plastic capacity, with moment redistribution between the two sides.
 ``given_forces``
-    The state of the opening at a prescribed shear and moment.
+    The state of the opening at a prescribed shear and moment pair.
+
+Circular and elliptical openings are handled by parallel implementations sharing
+the geometry-independent numerics. The elliptical modes carry an ``_elliptical``
+suffix and take an additional ``a_b_ratio`` argument; at ``a_b_ratio = 1`` they
+reproduce the circular results exactly, which is verified by the test suite.
 
 Example
 -------
@@ -46,17 +51,39 @@ from .tee_bending_resistance import (
     analyze_circular_opening,
 )
 from .el1 import run_mode_el1, EL1Result
+from .core_elliptical import (
+    NPOINTS,
+    EllipticalSectionProperties,
+    build_elliptical_section_properties,
+    perimeter_coordinates_360,
+)
+from .core_elliptical import point_coordinates
+from .el1_elliptical import run_mode_el1_elliptical, EL1EllipticalResult
+from .el2_elliptical import run_mode_el2_elliptical, EL2EllipticalResult
+from .plcap_elliptical import run_mode_plcap_elliptical, PLCAPEllipticalResult
+from .given_forces_elliptical import (
+    run_mode_given_forces_elliptical, GivenForcesEllipticalResult,
+)
 from .el2 import run_mode_el2, EL2Result
 from .plcap import run_mode_plcap, PLCAPResult
 from .given_forces import run_mode_given_forces, GivenForcesResult
 
 __all__ = [
     "__version__",
-    # Analysis modes
+    # Analysis modes - circular openings
     "run_mode_el1", "EL1Result",
     "run_mode_el2", "EL2Result",
     "run_mode_plcap", "PLCAPResult",
     "run_mode_given_forces", "GivenForcesResult",
+    # Analysis modes - elliptical openings
+    "run_mode_el1_elliptical", "EL1EllipticalResult",
+    "run_mode_el2_elliptical", "EL2EllipticalResult",
+    "run_mode_plcap_elliptical", "PLCAPEllipticalResult",
+    "run_mode_given_forces_elliptical", "GivenForcesEllipticalResult",
+    # Elliptical numerical core
+    "NPOINTS", "EllipticalSectionProperties",
+    "build_elliptical_section_properties", "perimeter_coordinates_360",
+    "point_coordinates",
     # Shared numerical core
     "THETAS", "SectionProperties", "build_section_properties",
     "perform_rsm", "calculate_zep", "limit_web_plasticity",

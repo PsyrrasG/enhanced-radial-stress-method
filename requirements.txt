@@ -5,3 +5,4 @@
 # the code also runs with any numpy >= 1.24 if you prefer a looser constraint
 # (see pyproject.toml).
 numpy==2.4.4
+scipy==1.17.1

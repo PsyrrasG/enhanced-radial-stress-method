@@ -160,7 +160,7 @@ print(result.coords_critical_Q1)   # (-81.1, 159.8) mm from the opening centre
 
 The corresponding functions are `run_mode_el1_elliptical`, `run_mode_el2_elliptical`, `run_mode_plcap_elliptical` and `run_mode_given_forces_elliptical`. For plotting, `perimeter_coordinates_360(props)` returns the perimeter coordinates matching the edge-stress distribution index for index, and `point_coordinates(props, index, quadrant)` gives the location of a single point.
 
-Setting `a_b_ratio = 1` describes a circle, and in that case the elliptical implementation reproduces the circular one exactly. Because the two are written independently — one discretising by equal angles, the other by equal arc length – that agreement is a genuine check on both, and it is asserted by the test suite.
+Setting `a_b_ratio = 1` describes a circle, and in that case the elliptical implementation reproduces the circular one exactly. Because the two are written independently — one discretising by equal angles, the other by equal arc length — that agreement is a genuine check on both, and it is asserted by the test suite.
 
 ---
 
@@ -188,14 +188,14 @@ The package is organised accordingly:
 
 ```
 enhanced_rsm/
-├── core.py                       circular geometry, section properties, kernels
-├── core_elliptical.py            elliptical geometry and shape-dependent kernels
-├── tee_bending_resistance.py     Tee resistances at the opening centre-line
-├── el1.py / el1_elliptical.py    elastic limit (LMS)
-├── el2.py / el2_elliptical.py    elastic limit (HMS)
-├── plcap.py / plcap_elliptical.py        plastic capacity with redistribution
-├── given_forces.py / given_forces_elliptical.py   state at prescribed forces
-└── cli.py                        command-line interface
+├── core.py                                         circular geometry, section properties, kernels
+├── core_elliptical.py                              elliptical geometry and shape-dependent kernels
+├── tee_bending_resistance.py                       Tee resistances at the opening centre-line
+├── el1.py / el1_elliptical.py                      elastic limit (LMS)
+├── el2.py / el2_elliptical.py                      elastic limit (HMS)
+├── plcap.py / plcap_elliptical.py                  plastic capacity with redistribution
+├── given_forces.py / given_forces_elliptical.py    state at prescribed forces
+└── cli.py                                          command-line interface
 ```
 
 `core.py` holds everything the four modes have in common — the section properties at every plane, the force-equilibrium relations, the elasto-plastic neutral-axis solve, the plasticity search and the redistribution step. Each mode module contains only its own orchestration.
